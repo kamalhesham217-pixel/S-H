@@ -277,7 +277,7 @@ left: 50%;
 transform: translateX(-50%);
 display: flex;
 align-items: flex-end;
-gap: 15px;
+gap: 12px;
 width: 94%;
 max-width: 1000px;
 min-width: 320px;
@@ -288,7 +288,7 @@ flex: 1;
 background: rgba(0, 0, 0, 0.45);
 border: 1px solid var(--border-color);
 border-radius: 25px;
-padding: 0 50px 0 16px;
+padding: 0 60px 0 16px;
 display: flex;
 align-items: center;
 transition: all .3s;
@@ -365,8 +365,8 @@ background: rgba(0, 255, 255, 0.3);
 transform: translateY(-50%) scale(1.1);
 }
 .send-btn {
-width: 52px;
-height: 52px;
+width: 44px;
+height: 44px;
 border-radius: 50%;
 background: rgba(0, 255, 255, 0.2);
 border: 1px solid var(--border-color);
@@ -375,7 +375,6 @@ justify-content: center;
 align-items: center;
 cursor: pointer;
 transition: all .3s;
-flex-shrink: 0;
 }
 .send-btn.active {
 background: rgba(0, 255, 255, 0.3);
@@ -385,16 +384,11 @@ transform: scale(1.1);
 background: rgba(0, 255, 255, 0.4);
 transform: scale(1.15);
 }
-.send-btn img {
-width: 32px;
-height: 32px;
-object-fit: contain;
-}
 #actionMenu {
 position: fixed;
 right: 50%;
 transform: translateX(50%);
-bottom: 85px;
+bottom: 75px;
 display: flex;
 flex-direction: column;
 gap: 12px;
@@ -409,7 +403,7 @@ align-items: flex-end;
 #actionMenu.open {
 opacity: 1;
 visibility: visible;
-bottom: 85px;
+bottom: 75px;
 }
 .mic-btn,
 .image-btn {
@@ -492,6 +486,7 @@ align-items: center;
 color: var(--text-color);
 font-size: 14px;
 }
+
 .todo-list-section {
 background: rgba(0, 255, 255, 0.15);
 border: 1px solid var(--border-color);
@@ -524,6 +519,7 @@ margin: 0;
 color: #ccc;
 font-size: 14px;
 }
+
 .favorites-header {
 background: rgba(0, 255, 255, 0.15);
 border: 1px solid var(--border-color);
@@ -1064,12 +1060,11 @@ header{padding:12px 15px;}
 }
 @media (max-width:500px){
 header{font-size:18px;padding:10px 15px}
-.input-container{width:96%;bottom:10px;gap:10px}
+.input-container{width:96%;bottom:10px}
 textarea{font-size:16px;max-height:270px}
 .input-area{padding:0 50px 0 12px;border-radius:20px}
 .action-btn{width:32px;height:32px;right:8px}
-.send-btn,.mic-btn,.image-btn{width:46px;height:46px}
-.send-btn img{width:28px;height:28px}
+.send-btn,.mic-btn,.image-btn{width:40px;height:40px}
 .user,.bot-response{max-width:90%;font-size:15px}
 .btn,.initial-btn{padding:10px 20px;font-size:15px}
 .chat-action-btn{width:24px;height:24px;font-size:12px}
@@ -1105,7 +1100,7 @@ textarea{font-size:16px;max-height:270px}
 </div>
 </div>
 <div class="send-btn" id="sendBtn">
-<img src="row.jpg" alt="إرسال">
+<img src="up-arrow.png" alt="" style="width:24px;height:24px;filter:brightness(0) saturate(100%) invert(76%) sepia(12%) saturate(2476%) hue-rotate(144deg) brightness(103%) contrast(97%);">
 </div>
 </div>
 <div id="actionMenu">
@@ -1188,9 +1183,7 @@ textarea{font-size:16px;max-height:270px}
 </div>
 </div>
 <script>
-// ========== رابط الإنتاج النهائي ==========
-const N8N_WEBHOOK_URL = "https://hesham217.app.n8n.cloud/webhook/kalmeron217";
-
+const N8N_WEBHOOK_URL = "https://kamal13.app.n8n.cloud/webhook/kalmeron";
 const chat = document.getElementById("chat"),
 msg = document.getElementById("msg"),
 sendBtn = document.getElementById("sendBtn"),
@@ -1219,12 +1212,160 @@ initialBirthDate = document.getElementById("initialBirthDate"),
 continueInitialBtn = document.getElementById("continueInitialBtn"),
 welcomeBanner = document.getElementById("welcomeBanner"),
 modeOptions = document.querySelectorAll('.mode-option');
+
 let isThinking = false;
 let currentChatId = null;
 let selectedMode = 'general';
 let snowflakesEnabled = true;
 let snowflakesDisabledModes = [];
+
 const SESSION_KEY = 'kalmeron_active_chat_session';
+
+// ================ نظام حفظ المستخدمين المتعدد ================
+function saveUserToDatabase(name, birthDate, mode, snowDisabledModes) {
+    // إنشاء معرف فريد للمستخدم
+    const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    // بيانات المستخدم الحالي
+    const currentUser = {
+        id: userId,
+        name: name,
+        birthDate: birthDate,
+        mode: mode || 'general',
+        snowflakesDisabledModes: snowDisabledModes || [],
+        registeredAt: new Date().toISOString(),
+        lastSeen: new Date().toISOString(),
+        status: 'active',
+        deviceInfo: navigator.userAgent,
+        language: navigator.language
+    };
+    
+    // حفظ المستخدم الحالي في localStorage (للجلسة الحالية)
+    localStorage.setItem('kalmeronUserData', JSON.stringify(currentUser));
+    
+    // جلب قائمة كل المستخدمين
+    let allUsers = JSON.parse(localStorage.getItem('kalmeron_all_users') || '[]');
+    
+    // التحقق إذا كان المستخدم موجود مسبقاً (بنفس الاسم وتاريخ الميلاد)
+    const existingUserIndex = allUsers.findIndex(u => u.name === name && u.birthDate === birthDate);
+    
+    if (existingUserIndex !== -1) {
+        // تحديث بيانات المستخدم الموجود
+        allUsers[existingUserIndex].lastSeen = new Date().toISOString();
+        allUsers[existingUserIndex].mode = mode;
+        allUsers[existingUserIndex].deviceInfo = navigator.userAgent;
+        // تحديث معرف المستخدم الحالي
+        currentUser.id = allUsers[existingUserIndex].id;
+        localStorage.setItem('kalmeronUserData', JSON.stringify(currentUser));
+    } else {
+        // إضافة مستخدم جديد
+        allUsers.push(currentUser);
+    }
+    
+    // حفظ القائمة الكاملة
+    localStorage.setItem('kalmeron_all_users', JSON.stringify(allUsers));
+    
+    // تسجيل الجلسة
+    logUserSession(currentUser.id);
+    
+    return currentUser;
+}
+
+function logUserSession(userId) {
+    const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    sessionStorage.setItem('kalmeron_session_id', sessionId);
+    
+    const session = {
+        sessionId: sessionId,
+        userId: userId,
+        startTime: new Date().toISOString(),
+        lastActive: new Date().toISOString(),
+        userAgent: navigator.userAgent
+    };
+    
+    let sessions = JSON.parse(localStorage.getItem('kalmeron_sessions') || '[]');
+    sessions.push(session);
+    // الاحتفاظ بآخر 100 جلسة فقط
+    if (sessions.length > 100) sessions = sessions.slice(-100);
+    localStorage.setItem('kalmeron_sessions', JSON.stringify(sessions));
+}
+
+function updateUserLastSeen() {
+    const user = checkUser();
+    if (!user) return;
+    
+    // تحديث آخر ظهور للمستخدم الحالي
+    user.lastSeen = new Date().toISOString();
+    localStorage.setItem('kalmeronUserData', JSON.stringify(user));
+    
+    // تحديث في قائمة كل المستخدمين
+    let allUsers = JSON.parse(localStorage.getItem('kalmeron_all_users') || '[]');
+    const userIndex = allUsers.findIndex(u => u.id === user.id);
+    if (userIndex !== -1) {
+        allUsers[userIndex].lastSeen = new Date().toISOString();
+        localStorage.setItem('kalmeron_all_users', JSON.stringify(allUsers));
+    }
+    
+    // تحديث آخر نشاط في الجلسة
+    const sessionId = sessionStorage.getItem('kalmeron_session_id');
+    if (sessionId) {
+        let sessions = JSON.parse(localStorage.getItem('kalmeron_sessions') || '[]');
+        const sessionIndex = sessions.findIndex(s => s.sessionId === sessionId);
+        if (sessionIndex !== -1) {
+            sessions[sessionIndex].lastActive = new Date().toISOString();
+            localStorage.setItem('kalmeron_sessions', JSON.stringify(sessions));
+        }
+    }
+}
+
+function getAllUsers() {
+    return JSON.parse(localStorage.getItem('kalmeron_all_users') || '[]');
+}
+
+function isUserBlocked(userId) {
+    const blockedUsers = JSON.parse(localStorage.getItem('kalmeron_blocked_users') || '[]');
+    return blockedUsers.includes(userId);
+}
+
+function checkUserBlocked() {
+    const user = checkUser();
+    if (user && isUserBlocked(user.id)) {
+        alert('عذراً، تم حظر حسابك. لا يمكنك الدخول إلى الشات.');
+        clearUser();
+        location.reload();
+        return true;
+    }
+    return false;
+}
+
+// تعديل دالة checkUser لتشمل التحقق من الحظر
+function checkUser() {
+    const user = JSON.parse(localStorage.getItem('kalmeronUserData') || 'null');
+    if (user && isUserBlocked(user.id)) {
+        clearUser();
+        return null;
+    }
+    return user;
+}
+
+// تعديل دالة saveUser الأصلية
+function saveUser(name, birthDate, mode, snowDisabledModes) {
+    return saveUserToDatabase(name, birthDate, mode, snowDisabledModes);
+}
+
+function clearUser() {
+    localStorage.removeItem('kalmeronUserData');
+}
+
+// تحديث آخر ظهور كل دقيقة
+setInterval(updateUserLastSeen, 60000);
+
+// التحقق من الحظر عند بدء التشغيل
+window.addEventListener('load', () => {
+    if (checkUserBlocked()) return;
+});
+
+// ================ باقي الدوال ================
 
 function createSnowflakes(){
 if (snowflakesDisabledModes.includes(selectedMode)) return;
@@ -1279,9 +1420,6 @@ document.body.className = `mode-${selectedMode}`;
 clearSnowflakes();
 if (!snowflakesDisabledModes.includes(selectedMode)) setTimeout(createSnowflakes, 100);
 }
-function checkUser(){return JSON.parse(localStorage.getItem('kalmeronUserData')||'null');}
-function saveUser(n,b,m,snowDisabledModes){localStorage.setItem('kalmeronUserData',JSON.stringify({name:n,birthDate:b,mode:m||'general',snowflakesDisabledModes:snowDisabledModes||[],registeredAt:new Date().toISOString()}));}
-function clearUser(){localStorage.removeItem('kalmeronUserData');}
 function createPersonalProfileSection() {
 const profileSection = document.createElement('div');
 profileSection.className = 'personal-profile-section';
@@ -1300,6 +1438,8 @@ window.location.href = 'todo-list.html';
 });
 return todoSection;
 }
+// تم إزالة createBooksSection نهائياً
+
 function showProfile(){
 const u=checkUser();
 if(u){
@@ -1373,78 +1513,62 @@ default: w = u ? `مرحباً بك مجدداً، ${u.name}! 🌟` : 'اهلا 
 showWelcomeBanner(w);
 setTimeout(()=>msg.focus(),500);
 }
-
-// دالة الإرسال المعدلة
 async function sendToRAG(question) {
-    try {
-        let userId = localStorage.getItem('kalmeron_user_id');
-        if (!userId) {
-            userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('kalmeron_user_id', userId);
-        }
-        
-        let sessionId = sessionStorage.getItem('kalmeron_session_id');
-        if (!sessionId) {
-            sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            sessionStorage.setItem('kalmeron_session_id', sessionId);
-        }
-
-        console.log('جاري الإرسال إلى:', N8N_WEBHOOK_URL);
-        
-        const response = await fetch(N8N_WEBHOOK_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                question: question,
-                timestamp: new Date().toISOString(),
-                sessionId: sessionId,
-                userId: userId,
-                mode: selectedMode
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`خطأ ${response.status}: ${response.statusText}`);
-        }
-
-        const responseText = await response.text();
-        console.log('الرد:', responseText);
-        
-        // محاولة تحويل الرد لنص مفهوم
-        let answerText = responseText;
-        try {
-            const jsonResponse = JSON.parse(responseText);
-            if (jsonResponse.answer) answerText = jsonResponse.answer;
-            else if (jsonResponse.response) answerText = jsonResponse.response;
-            else if (jsonResponse.message) answerText = jsonResponse.message;
-            else if (jsonResponse.text) answerText = jsonResponse.text;
-            else if (jsonResponse.output) answerText = jsonResponse.output;
-            else answerText = JSON.stringify(jsonResponse);
-        } catch (e) {
-            // مش JSON، استخدم النص العادي
-        }
-
-        return {
-            answer: answerText,
-            sources: [],
-            confidence: 0.9,
-            error: false
-        };
-
-    } catch (error) {
-        console.error('خطأ:', error);
-        return {
-            answer: `❌ خطأ: ${error.message}. تأكد من اتصال الإنترنت والرابط.`,
-            sources: [],
-            confidence: 0,
-            error: true
-        };
-    }
+try {
+let userId = localStorage.getItem('kalmeron_user_id');
+if (!userId) {
+userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+localStorage.setItem('kalmeron_user_id', userId);
 }
-
+let sessionId = sessionStorage.getItem('kalmeron_session_id');
+if (!sessionId) {
+sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+sessionStorage.setItem('kalmeron_session_id', sessionId);
+}
+const response = await fetch(N8N_WEBHOOK_URL, {
+method: 'POST',
+headers: {'Content-Type': 'application/json','Accept': 'application/json'},
+body: JSON.stringify({question, timestamp: new Date().toISOString(), sessionId, userId, mode: selectedMode})
+});
+if (!response.ok) throw new Error(`خطأ في الاتصال: ${response.status} ${response.statusText}`);
+const responseText = await response.text();
+let parsedData;
+try { parsedData = JSON.parse(responseText); } catch (parseError) { parsedData = { answer: responseText }; }
+const result = extractAnswerFromResponse(parsedData);
+return result;
+} catch (error) {
+console.error('❌ خطأ في الاتصال بالـ RAG:', error);
+return {answer: 'عذراً، حدث خطأ في الاتصال بالخادم. حاول مرة أخرى.', sources: [], confidence: 0, error: true};
+}
+}
+function extractAnswerFromResponse(data) {
+if (typeof data === 'string') {
+try { return extractAnswerFromResponse(JSON.parse(data)); } catch (e) {
+return {answer: data, sources: [], confidence: 0.8};
+}
+}
+if (data && typeof data === 'object') {
+if (data.answer && typeof data.answer === 'string') return {answer: data.answer, sources: data.sources || [], confidence: data.confidence || 0.9};
+if (data.output && typeof data.output === 'string') return {answer: data.output, sources: data.sources || [], confidence: data.confidence || 0.9};
+const commonKeys = ['text', 'message', 'response', 'content', 'result', 'generated_text', 'completion'];
+for (const key of commonKeys) {
+if (data[key] && typeof data[key] === 'string') return {answer: data[key], sources: data.sources || [], confidence: data.confidence || 0.8};
+}
+if (data.$node && data.$node["AI Agent"] && data.$node["AI Agent"].json && data.$node["AI Agent"].json.output) {
+return {answer: data.$node["AI Agent"].json.output, sources: data.sources || [], confidence: data.confidence || 0.9};
+}
+for (const key in data) {
+if (typeof data[key] === 'string' && data[key].trim().length > 10 && !['timestamp', 'sessionId', 'userId', 'mode', 'id', 'status', 'question'].includes(key)) {
+return {answer: data[key], sources: [], confidence: 0.7};
+}
+if (typeof data[key] === 'object' && data[key] !== null) {
+const nestedResult = extractAnswerFromResponse(data[key]);
+if (nestedResult.answer) return nestedResult;
+}
+}
+}
+return {answer: '⚠️ تم استلام رد من الخادم لكن لم أتمكن من استخراج الإجابة.', sources: [], confidence: 0.3};
+}
 async function sendMessage(){
 const userText = msg.value.trim();
 if (!userText || isThinking) return;
@@ -1466,7 +1590,21 @@ const ragResponse = await sendToRAG(userText);
 if (thinkingMsg.parentNode) chat.removeChild(thinkingMsg);
 const botMsg = document.createElement("div");
 botMsg.className = "bot-response";
-botMsg.textContent = ragResponse.answer || 'لم يتم استلام إجابة';
+let formattedAnswer = ragResponse.answer || 'لم يتم استلام إجابة من الخادم';
+if (ragResponse.sources && ragResponse.sources.length > 0) {
+formattedAnswer += `
+📚 **المصادر:**
+`;
+ragResponse.sources.forEach((source, index) => {
+formattedAnswer += `${index + 1}. ${source}\n`;
+});
+}
+if (ragResponse.confidence && ragResponse.confidence < 0.5) {
+formattedAnswer += `
+⚠️ *ملاحظة: قد تكون هذه الإجابة غير دقيقة*
+`;
+}
+botMsg.textContent = formattedAnswer;
 chat.appendChild(botMsg);
 chat.scrollTop = chat.scrollHeight;
 saveCurrentChat();
@@ -1474,7 +1612,7 @@ saveCurrentChat();
 if (thinkingMsg.parentNode) chat.removeChild(thinkingMsg);
 const errorMsg = document.createElement("div");
 errorMsg.className = "bot-response";
-errorMsg.textContent = '❌ حدث خطأ غير متوقع';
+errorMsg.textContent = '❌ عذراً، حدث خطأ في الاتصال بالخادم. حاول مرة أخرى.';
 chat.appendChild(errorMsg);
 chat.scrollTop = chat.scrollHeight;
 }
@@ -1488,6 +1626,7 @@ const chats = JSON.parse(localStorage.getItem('kalmeronChats') || '[]');
 chatHistoryList.innerHTML = '';
 chatHistoryList.appendChild(createPersonalProfileSection());
 chatHistoryList.appendChild(createTodoListSection());
+// تم إزالة createBooksSection من هنا
 if (chats.length === 0) {
 chatHistoryList.innerHTML += '<p style="color:rgba(0,255,255,0.6);margin:20px 0;">لا توجد محادثات سابقة</p>';
 return;
