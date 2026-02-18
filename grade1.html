@@ -1191,7 +1191,7 @@ textarea{font-size:16px;max-height:270px}
 </div>
 <script>
     // ======================== التعديل 1: تغيير رابط الباك إند ========================
-    const N8N_WEBHOOK_URL = "https://hesham217.app.n8n.cloud/webhook/kalmeron217"; // ✅ تم التغيير إلى الرابط الجديد
+    const N8N_WEBHOOK_URL = "https://hesham217.app.n8n.cloud/webhook/kalmeron217";
 
     const chat = document.getElementById("chat"),
     msg = document.getElementById("msg"),
@@ -1228,43 +1228,35 @@ textarea{font-size:16px;max-height:270px}
     let snowflakesDisabledModes = [];
     const SESSION_KEY = 'kalmeron_active_chat_session';
 
-    // ======================== التعديل 2: نظام تسجيل متعدد المستخدمين ========================
-    // مفتاح جديد لتخزين جميع المستخدمين في localStorage
+    // ======================== نظام تسجيل متعدد المستخدمين ========================
     const USERS_DB_KEY = 'kalmeron_users_database';
 
-    // دالة لجلب جميع المستخدمين
     function getAllUsers() {
         return JSON.parse(localStorage.getItem(USERS_DB_KEY) || '{}');
     }
 
-    // دالة لحفظ جميع المستخدمين
     function saveAllUsers(users) {
         localStorage.setItem(USERS_DB_KEY, JSON.stringify(users));
     }
 
-    // دالة للتحقق من المستخدم الحالي (معدلة)
     function checkUser() {
-        // نحاول أولاً جلب المستخدم من المفتاح القديم للتوافق
         const oldUserData = localStorage.getItem('kalmeronUserData');
         if (oldUserData) {
             const user = JSON.parse(oldUserData);
-            // نتأكد من أن هذا المستخدم موجود في قاعدة البيانات الجديدة
             const users = getAllUsers();
-            const userId = user.name + '_' + user.birthDate; // معرف فريد
+            const userId = user.name + '_' + user.birthDate;
             if (users[userId]) {
-                return users[userId]; // نعيد البيانات من قاعدة البيانات المتعددة
+                return users[userId];
             }
         }
         return null;
     }
 
-    // دالة لحفظ المستخدم (معدلة لدعم عدة مستخدمين)
+    // ✅ دالة حفظ المستخدم المعدلة (مع إضافته للقائمة العامة)
     function saveUser(name, birthDate, mode, snowDisabledModes) {
         const users = getAllUsers();
-        // إنشاء معرف فريد للمستخدم باستخدام الاسم وتاريخ الميلاد
         const userId = name + '_' + birthDate;
         
-        // بيانات المستخدم
         const userData = {
             name: name,
             birthDate: birthDate,
@@ -1274,55 +1266,50 @@ textarea{font-size:16px;max-height:270px}
             lastLogin: new Date().toISOString()
         };
         
-        // حفظ المستخدم في قاعدة البيانات المتعددة
         users[userId] = userData;
         saveAllUsers(users);
-        
-        // للتوافق مع الكود القديم، نحتفظ ببيانات المستخدم الحالي في المفتاح القديم
         localStorage.setItem('kalmeronUserData', JSON.stringify(userData));
+        
+        // ✅ إضافة المستخدم للقائمة العامة (عشان يظهر في لوحة التحكم)
+        const allUsers = JSON.parse(localStorage.getItem('all_kalmeron_users') || '[]');
+        const exists = allUsers.some(u => u.name === name && u.birthDate === birthDate);
+        if (!exists) {
+            allUsers.push(userData);
+            localStorage.setItem('all_kalmeron_users', JSON.stringify(allUsers));
+        }
         
         return userData;
     }
 
-    // دالة لمسح المستخدم الحالي (معدلة)
-    function clearUser() {
-        // لا نقوم بمسح قاعدة البيانات بأكملها، فقط المفتاح القديم
-        localStorage.removeItem('kalmeronUserData');
-        // ملاحظة: لا نمسح المستخدم من قاعدة البيانات المتعددة، فقط نسجل خروجه
+    // ✅ دالة جديدة لجلب كل المستخدمين للوحة التحكم
+    function getAllKalmeronUsers() {
+        return JSON.parse(localStorage.getItem('all_kalmeron_users') || '[]');
     }
 
-    // دالة للتحقق مما إذا كان المستخدم موجوداً في قاعدة البيانات
     function findUserByNameAndBirth(name, birthDate) {
         const users = getAllUsers();
         const userId = name + '_' + birthDate;
         return users[userId] || null;
     }
 
-    // دالة لتسجيل الدخول (اختياري لمستخدم موجود)
     function loginUser(name, birthDate) {
         const user = findUserByNameAndBirth(name, birthDate);
         if (user) {
-            // تحديث آخر ظهور
             user.lastLogin = new Date().toISOString();
             const users = getAllUsers();
             const userId = name + '_' + birthDate;
             users[userId] = user;
             saveAllUsers(users);
-            
-            // حفظ في المفتاح القديم للتوافق
             localStorage.setItem('kalmeronUserData', JSON.stringify(user));
             return user;
         }
         return null;
     }
 
-    // تعديل دالة handleInitialSetup لدعم عدة مستخدمين
     function handleInitialSetup() {
-        // التحقق من وجود مستخدم حالي
         const currentUser = checkUser();
         
         if (currentUser) {
-            // إذا كان هناك مستخدم مسجل الدخول بالفعل
             selectedMode = currentUser.mode || 'general';
             snowflakesDisabledModes = currentUser.snowflakesDisabledModes || [];
             updateBodyClass();
@@ -1334,15 +1321,12 @@ textarea{font-size:16px;max-height:270px}
             return;
         }
         
-        // إذا لا يوجد مستخدم حالي، نعرض شاشة التسجيل
         setTimeout(() => initialSetupCard.classList.add('visible'), 300);
         
-        // ضبط تواريخ الميلاد المسموحة
         const minDate = new Date(); minDate.setFullYear(minDate.getFullYear() - 120);
         initialBirthDate.min = minDate.toISOString().split('T')[0];
         const maxDate = new Date(); initialBirthDate.max = maxDate.toISOString().split('T')[0];
         
-        // تعديل حدث زر الاستمرار ليدعم عدة مستخدمين
         continueInitialBtn.onclick = () => {
             const name = initialName.value.trim();
             const birthDate = initialBirthDate.value;
@@ -1355,11 +1339,9 @@ textarea{font-size:16px;max-height:270px}
             
             if (birthDateObj > today || birthDateObj < minBirthDate) { alert('يرجى إدخال تاريخ ميلاد صحيح'); return; }
             
-            // البحث عن المستخدم أولاً (تسجيل دخول)
             let user = findUserByNameAndBirth(name, birthDate);
             
             if (user) {
-                // مستخدم موجود - نحدث بياناته
                 user.mode = selectedMode;
                 user.snowflakesDisabledModes = snowflakesDisabledModes;
                 user.lastLogin = new Date().toISOString();
@@ -1370,7 +1352,6 @@ textarea{font-size:16px;max-height:270px}
                 saveAllUsers(users);
                 localStorage.setItem('kalmeronUserData', JSON.stringify(user));
             } else {
-                // مستخدم جديد - نسجله
                 user = saveUser(name, birthDate, selectedMode, snowflakesDisabledModes);
             }
             
@@ -1383,7 +1364,6 @@ textarea{font-size:16px;max-height:270px}
         };
     }
 
-    // تعديل دالة showProfile لعرض بيانات المستخدم الحالي
     function showProfile() {
         const u = checkUser();
         if (u) {
@@ -1395,7 +1375,6 @@ textarea{font-size:16px;max-height:270px}
         }
     }
 
-    // تعديل دالة modalSaveBtn لحفظ التعديلات على المستخدم الحالي
     modalSaveBtn.onclick = () => {
         const n = editName.value.trim(), b = editBirthDate.value;
         if (!n || !b) return;
@@ -1404,12 +1383,9 @@ textarea{font-size:16px;max-height:270px}
         m.setFullYear(m.getFullYear() - 120);
         if (d >= t || d < m) return;
         
-        // التحقق مما إذا كان المستخدم يغير اسمه أو تاريخ ميلاده
         const currentUser = checkUser();
         if (currentUser) {
-            // إذا تغير الاسم أو التاريخ، قد يكون هذا مستخدم جديد
             if (currentUser.name !== n || currentUser.birthDate !== b) {
-                // نتحقق إذا كان الاسم والتاريخ الجديدين موجودين مسبقاً
                 const existingUser = findUserByNameAndBirth(n, b);
                 if (existingUser) {
                     alert('هذا المستخدم موجود بالفعل! اختر اسماً آخر أو سجل دخول.');
@@ -1417,12 +1393,10 @@ textarea{font-size:16px;max-height:270px}
                 }
             }
             
-            // حذف المستخدم القديم من قاعدة البيانات
             const users = getAllUsers();
             const oldUserId = currentUser.name + '_' + currentUser.birthDate;
             delete users[oldUserId];
             
-            // حفظ المستخدم بالبيانات الجديدة
             const newUser = saveUser(n, b, selectedMode, snowflakesDisabledModes);
             
             hideProfile();
@@ -1431,7 +1405,6 @@ textarea{font-size:16px;max-height:270px}
         }
     };
 
-    // تعديل دالة createPersonalProfileSection
     function createPersonalProfileSection() {
         const profileSection = document.createElement('div');
         profileSection.className = 'personal-profile-section';
@@ -1442,15 +1415,17 @@ textarea{font-size:16px;max-height:270px}
         return profileSection;
     }
 
-    // تعديل دالة تسجيل الخروج
     logoutBtn.onclick = () => {
         if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-            clearUser(); // نمسح المفتاح القديم فقط
-            location.reload(); // إعادة تحميل الصفحة لإظهار شاشة التسجيل
+            clearUser();
+            location.reload();
         }
     };
 
-    // تعديل دالة saveCurrentChat لترتبط بالمستخدم الحالي
+    function clearUser() {
+        localStorage.removeItem('kalmeronUserData');
+    }
+
     function saveCurrentChat() {
         if (!chat.children.length) return null;
         
@@ -1471,7 +1446,6 @@ textarea{font-size:16px;max-height:270px}
             mode: selectedMode
         };
         
-        // تخزين المحادثات الخاصة بالمستخدم الحالي
         const userId = currentUser.name + '_' + currentUser.birthDate;
         let userChats = JSON.parse(localStorage.getItem(`chats_${userId}`) || '[]');
         
@@ -1488,7 +1462,6 @@ textarea{font-size:16px;max-height:270px}
         return chatData.id;
     }
 
-    // تعديل دالة loadChatHistory لتحميل محادثات المستخدم الحالي
     function loadChatHistory(filter = '') {
         const currentUser = checkUser();
         if (!currentUser) return;
@@ -1539,7 +1512,6 @@ textarea{font-size:16px;max-height:270px}
         }
     }
 
-    // تعديل دالة deleteChat لحذف من محادثات المستخدم الحالي
     function deleteChat(chatId) {
         if (confirm('هل أنت متأكد من حذف هذه المحادثة؟')) {
             const currentUser = checkUser();
@@ -1562,7 +1534,6 @@ textarea{font-size:16px;max-height:270px}
         }
     }
 
-    // تعديل دالة toggleFavoriteChat
     function toggleFavoriteChat(chatId) {
         const currentUser = checkUser();
         if (!currentUser) return;
@@ -1578,7 +1549,6 @@ textarea{font-size:16px;max-height:270px}
         }
     }
 
-    // تعديل دالة editChatTitle
     function editChatTitle(chatId) {
         const currentUser = checkUser();
         if (!currentUser) return;
@@ -1597,7 +1567,6 @@ textarea{font-size:16px;max-height:270px}
         }
     }
 
-    // تعديل دالة loadChat لتحميل من محادثات المستخدم الحالي
     function loadChat(chatId) {
         const currentUser = checkUser();
         if (!currentUser) return;
@@ -1622,7 +1591,6 @@ textarea{font-size:16px;max-height:270px}
         }
     }
 
-    // تعديل دالة restoreActiveSession
     function restoreActiveSession() {
         const sessionId = sessionStorage.getItem(SESSION_KEY);
         if (sessionId) {
@@ -1641,7 +1609,6 @@ textarea{font-size:16px;max-height:270px}
         return false;
     }
 
-    // تعديل دالة showModeSelectionDialog لتحديث وضع المستخدم
     function showModeSelectionDialog() {
         const modeDialog = document.createElement('div');
         modeDialog.id = 'modeSelectionDialog';
@@ -1687,7 +1654,6 @@ textarea{font-size:16px;max-height:270px}
             updateBodyClass();
             const user = checkUser();
             if (user) {
-                // تحديث وضع المستخدم في قاعدة البيانات
                 user.mode = selectedMode;
                 const users = getAllUsers();
                 const userId = user.name + '_' + user.birthDate;
@@ -1707,7 +1673,7 @@ textarea{font-size:16px;max-height:270px}
         document.body.appendChild(modeDialog);
     }
 
-    // ======================== باقي الدوال كما هي تماماً ========================
+    // ======================== باقي الدوال ========================
     function createSnowflakes() {
         if (snowflakesDisabledModes.includes(selectedMode)) return;
         const c = document.body;
