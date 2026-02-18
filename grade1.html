@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="ar">
 <head>
@@ -5,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kalmeron Chat - الصف الأول الثانوي</title>
 <style>
-/* نفس التصميم بالكامل - مفيش أي تغيير */
 :root {
 --primary-color: #2A0B5C;
 --secondary-color: #0A043C;
@@ -376,6 +376,7 @@ justify-content: center;
 align-items: center;
 cursor: pointer;
 transition: all .3s;
+overflow: hidden;
 }
 .send-btn.active {
 background: rgba(0, 255, 255, 0.3);
@@ -384,6 +385,11 @@ transform: scale(1.1);
 .send-btn:hover {
 background: rgba(0, 255, 255, 0.4);
 transform: scale(1.15);
+}
+.send-btn img {
+width: 28px;
+height: 28px;
+object-fit: contain;
 }
 #actionMenu {
 position: fixed;
@@ -487,7 +493,6 @@ align-items: center;
 color: var(--text-color);
 font-size: 14px;
 }
-
 .todo-list-section {
 background: rgba(0, 255, 255, 0.15);
 border: 1px solid var(--border-color);
@@ -520,7 +525,6 @@ margin: 0;
 color: #ccc;
 font-size: 14px;
 }
-
 .books-section {
 background: rgba(0, 255, 255, 0.15);
 border: 1px solid var(--border-color);
@@ -553,7 +557,6 @@ margin: 0;
 color: #ccc;
 font-size: 14px;
 }
-
 .favorites-header {
 background: rgba(0, 255, 255, 0.15);
 border: 1px solid var(--border-color);
@@ -1099,6 +1102,7 @@ textarea{font-size:16px;max-height:270px}
 .input-area{padding:0 50px 0 12px;border-radius:20px}
 .action-btn{width:32px;height:32px;right:8px}
 .send-btn,.mic-btn,.image-btn{width:40px;height:40px}
+.send-btn img{width:24px;height:24px}
 .user,.bot-response{max-width:90%;font-size:15px}
 .btn,.initial-btn{padding:10px 20px;font-size:15px}
 .chat-action-btn{width:24px;height:24px;font-size:12px}
@@ -1134,7 +1138,7 @@ textarea{font-size:16px;max-height:270px}
 </div>
 </div>
 <div class="send-btn" id="sendBtn">
-<img src="up-arrow.png" alt="" style="width:24px;height:24px;filter:brightness(0) saturate(100%) invert(76%) sepia(12%) saturate(2476%) hue-rotate(144deg) brightness(103%) contrast(97%);">
+<img src="row.jpg" alt="إرسال">
 </div>
 </div>
 <div id="actionMenu">
@@ -1216,11 +1220,8 @@ textarea{font-size:16px;max-height:270px}
 </div>
 </div>
 </div>
-
 <script>
-// ===== تم تعديل الـ Webhook هنا يا أسطى =====
 const N8N_WEBHOOK_URL = "https://hesham217.app.n8n.cloud/webhook/kalmeron217";
-
 const chat = document.getElementById("chat"),
 msg = document.getElementById("msg"),
 sendBtn = document.getElementById("sendBtn"),
@@ -1249,16 +1250,12 @@ initialBirthDate = document.getElementById("initialBirthDate"),
 continueInitialBtn = document.getElementById("continueInitialBtn"),
 welcomeBanner = document.getElementById("welcomeBanner"),
 modeOptions = document.querySelectorAll('.mode-option');
-
 let isThinking = false;
 let currentChatId = null;
 let selectedMode = 'general';
 let snowflakesEnabled = true;
 let snowflakesDisabledModes = [];
-
 const SESSION_KEY = 'kalmeron_active_chat_session';
-
-// ===== دوال الثلج =====
 function createSnowflakes(){
 if (snowflakesDisabledModes.includes(selectedMode)) return;
 const c=document.body;
@@ -1279,13 +1276,11 @@ const t=document.createElement('style');
 t.textContent=`@keyframes fall{0%{transform:translateY(0) translateX(0)}100%{transform:translateY(100vh) translateX(var(--horizontal-move,0))}}`;
 document.head.appendChild(t);
 }
-
 function clearSnowflakes() {
 document.querySelectorAll('.snowflake').forEach(s => s.remove());
 const style = document.querySelector('style[textContent*="@keyframes fall"]');
 if (style) style.remove();
 }
-
 function toggleSnowflakes() {
 if (snowflakesDisabledModes.includes(selectedMode)) {
 snowflakesDisabledModes = snowflakesDisabledModes.filter(m => m !== selectedMode);
@@ -1298,11 +1293,9 @@ updateSnowflakesButtonText();
 clearSnowflakes();
 if (!snowflakesDisabledModes.includes(selectedMode)) createSnowflakes();
 }
-
 function updateSnowflakesButtonText() {
 snowflakesBtn.textContent = snowflakesDisabledModes.includes(selectedMode) ? 'تفعيل تأثير الثلج' : 'تعطيل تأثير الثلج';
 }
-
 modeOptions.forEach(option => {
 option.addEventListener('click', () => {
 modeOptions.forEach(opt => opt.classList.remove('selected'));
@@ -1311,19 +1304,14 @@ selectedMode = option.dataset.mode;
 updateBodyClass();
 });
 });
-
 function updateBodyClass() {
 document.body.className = `mode-${selectedMode}`;
 clearSnowflakes();
 if (!snowflakesDisabledModes.includes(selectedMode)) setTimeout(createSnowflakes, 100);
 }
-
-// ===== دوال المستخدم =====
 function checkUser(){return JSON.parse(localStorage.getItem('kalmeronUserData')||'null');}
 function saveUser(n,b,m,snowDisabledModes){localStorage.setItem('kalmeronUserData',JSON.stringify({name:n,birthDate:b,mode:m||'general',snowflakesDisabledModes:snowDisabledModes||[],registeredAt:new Date().toISOString()}));}
 function clearUser(){localStorage.removeItem('kalmeronUserData');}
-
-// ===== دوال الواجهة =====
 function createPersonalProfileSection() {
 const profileSection = document.createElement('div');
 profileSection.className = 'personal-profile-section';
@@ -1333,7 +1321,6 @@ profileSection.innerHTML = `<h3>${displayName}</h3><p>اضغط لتعديل مع
 profileSection.addEventListener('click', () => showProfile());
 return profileSection;
 }
-
 function createTodoListSection() {
 const todoSection = document.createElement('div');
 todoSection.className = 'todo-list-section';
@@ -1343,7 +1330,6 @@ window.location.href = 'todo-list.html';
 });
 return todoSection;
 }
-
 function createBooksSection() {
 const booksSection = document.createElement('div');
 booksSection.className = 'books-section';
@@ -1353,7 +1339,6 @@ window.location.href = 'books.html';
 });
 return booksSection;
 }
-
 function showProfile(){
 const u=checkUser();
 if(u){
@@ -1364,9 +1349,7 @@ updateSnowflakesButtonText();
 profileModal.style.display='flex';
 }
 }
-
 function hideProfile(){profileModal.style.display='none';}
-
 function startNewChat() {
 chat.innerHTML = '';
 currentChatId = null;
@@ -1374,11 +1357,9 @@ sessionStorage.removeItem(SESSION_KEY);
 const user = checkUser();
 loadWelcome(user);
 }
-
 function generateChatId() {
 return 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
-
 function getCurrentChatTitle() {
 const firstUserMsg = document.querySelector('.msg.user');
 if (firstUserMsg && firstUserMsg.textContent.trim()) {
@@ -1386,7 +1367,6 @@ return firstUserMsg.textContent.trim().substring(0, 30) + (firstUserMsg.textCont
 }
 return 'محادثة جديدة';
 }
-
 function saveCurrentChat() {
 if (!chat.children.length) return null;
 const chatMessages = [];
@@ -1413,7 +1393,6 @@ currentChatId = chatData.id;
 sessionStorage.setItem(SESSION_KEY, currentChatId);
 return chatData.id;
 }
-
 function showWelcomeBanner(text) {
 welcomeBanner.textContent = text;
 welcomeBanner.classList.add('show');
@@ -1422,7 +1401,6 @@ welcomeBanner.classList.add('hide');
 setTimeout(() => welcomeBanner.classList.remove('show', 'hide'), 400);
 }, 2000);
 }
-
 function loadWelcome(u){
 let w;
 switch(selectedMode) {
@@ -1434,8 +1412,6 @@ default: w = u ? `مرحباً بك مجدداً، ${u.name}! 🌟` : 'اهلا 
 showWelcomeBanner(w);
 setTimeout(()=>msg.focus(),500);
 }
-
-// ===== دالة الإرسال المعدلة (بها تعديل بسيط) =====
 async function sendToRAG(question) {
 try {
 let userId = localStorage.getItem('kalmeron_user_id');
@@ -1443,43 +1419,35 @@ if (!userId) {
 userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 localStorage.setItem('kalmeron_user_id', userId);
 }
-
 let sessionId = sessionStorage.getItem('kalmeron_session_id');
 if (!sessionId) {
 sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 sessionStorage.setItem('kalmeron_session_id', sessionId);
 }
-
-// ===== التعديل هنا: إضافة معلومات الصف الأول الثانوي =====
 const response = await fetch(N8N_WEBHOOK_URL, {
 method: 'POST',
 headers: {'Content-Type': 'application/json','Accept': 'application/json'},
 body: JSON.stringify({
-question, 
-timestamp: new Date().toISOString(), 
-sessionId, 
-userId, 
+question,
+timestamp: new Date().toISOString(),
+sessionId,
+userId,
 mode: selectedMode,
-grade: "1", // تحديد الصف الأول ثانوي
-level: "first_secondary" // تأكيد إضافي
+grade: "1",
+level: "first_secondary"
 })
 });
-
 if (!response.ok) throw new Error(`خطأ في الاتصال: ${response.status} ${response.statusText}`);
-
 const responseText = await response.text();
 let parsedData;
 try { parsedData = JSON.parse(responseText); } catch (parseError) { parsedData = { answer: responseText }; }
-
 const result = extractAnswerFromResponse(parsedData);
 return result;
-
 } catch (error) {
 console.error('❌ خطأ في الاتصال:', error);
 return {answer: 'عذراً، حدث خطأ في الاتصال بالخادم. حاول مرة أخرى.', sources: [], confidence: 0, error: true};
 }
 }
-
 function extractAnswerFromResponse(data) {
 if (typeof data === 'string') {
 try { return extractAnswerFromResponse(JSON.parse(data)); } catch (e) {
@@ -1508,11 +1476,9 @@ if (nestedResult.answer) return nestedResult;
 }
 return {answer: '⚠️ تم استلام رد من الخادم لكن لم أتمكن من استخراج الإجابة.', sources: [], confidence: 0.3};
 }
-
 async function sendMessage(){
 const userText = msg.value.trim();
 if (!userText || isThinking) return;
-
 const userMsg = document.createElement("div");
 userMsg.className = "msg user";
 userMsg.textContent = userText;
@@ -1520,43 +1486,36 @@ chat.appendChild(userMsg);
 msg.value = "";
 adjustHeight();
 updateSendBtn();
-
 const thinkingMsg = document.createElement("div");
 thinkingMsg.className = "bot-response";
 thinkingMsg.innerHTML = 'جاري التفكير<span class="thinking-dots"></span>';
 chat.appendChild(thinkingMsg);
 chat.scrollTop = chat.scrollHeight;
-
 isThinking = true;
-
 try {
 const ragResponse = await sendToRAG(userText);
 if (thinkingMsg.parentNode) chat.removeChild(thinkingMsg);
-
 const botMsg = document.createElement("div");
 botMsg.className = "bot-response";
 let formattedAnswer = ragResponse.answer || 'لم يتم استلام إجابة من الخادم';
-
 if (ragResponse.sources && ragResponse.sources.length > 0) {
 formattedAnswer += `
 📚 **المصادر:**
 `;
 ragResponse.sources.forEach((source, index) => {
-formattedAnswer += `${index + 1}. ${source}\n`;
+formattedAnswer += `${index + 1}. ${source}
+`;
 });
 }
-
 if (ragResponse.confidence && ragResponse.confidence < 0.5) {
 formattedAnswer += `
 ⚠️ *ملاحظة: قد تكون هذه الإجابة غير دقيقة*
 `;
 }
-
 botMsg.textContent = formattedAnswer;
 chat.appendChild(botMsg);
 chat.scrollTop = chat.scrollHeight;
 saveCurrentChat();
-
 } catch (error) {
 if (thinkingMsg.parentNode) chat.removeChild(thinkingMsg);
 const errorMsg = document.createElement("div");
@@ -1567,23 +1526,19 @@ chat.scrollTop = chat.scrollHeight;
 }
 isThinking = false;
 }
-
 function adjustHeight(){msg.style.height='auto';const h=window.innerWidth<=500?270:360;msg.style.height=Math.min(msg.scrollHeight,h)+'px';msg.style.overflowY=msg.scrollHeight>h?'auto':'hidden';}
 function updateSendBtn(){sendBtn.classList.toggle('active',!!(msg.value.trim()||imageUpload.files.length>0));}
 function closeActionMenu(){actionMenu.classList.remove('open');actionBtn.classList.remove('active');}
-
 function loadChatHistory(filter = '') {
 const chats = JSON.parse(localStorage.getItem('kalmeronChats') || '[]');
 chatHistoryList.innerHTML = '';
 chatHistoryList.appendChild(createPersonalProfileSection());
 chatHistoryList.appendChild(createTodoListSection());
 chatHistoryList.appendChild(createBooksSection());
-
 if (chats.length === 0) {
 chatHistoryList.innerHTML += '<p style="color:rgba(0,255,255,0.6);margin:20px 0;">لا توجد محادثات سابقة</p>';
 return;
 }
-
 let filteredChats = chats;
 if (filter.trim() !== '') {
 filteredChats = chats.filter(chat =>
@@ -1592,15 +1547,12 @@ chat.title.toLowerCase().includes(filter.toLowerCase()) ||
 (new Date(chat.timestamp)).toLocaleTimeString('ar-EG', {hour:'2-digit',minute:'2-digit'}).includes(filter)
 );
 }
-
 if (filteredChats.length === 0) {
 chatHistoryList.innerHTML += '<p style="color:rgba(0,255,255,0.6);margin:20px 0;">لا توجد نتائج مطابقة</p>';
 return;
 }
-
 const favorites = filteredChats.filter(chat => chat.favorited);
 const regularChats = filteredChats.filter(chat => !chat.favorited);
-
 if (favorites.length > 0) {
 const favoritesHeader = document.createElement('div');
 favoritesHeader.className = 'favorites-header';
@@ -1608,7 +1560,6 @@ favoritesHeader.textContent = 'المفضلة';
 chatHistoryList.appendChild(favoritesHeader);
 favorites.forEach(chat => addChatItem(chat));
 }
-
 if (regularChats.length > 0) {
 const chatsHeader = document.createElement('div');
 chatsHeader.className = 'chats-header';
@@ -1617,7 +1568,6 @@ chatHistoryList.appendChild(chatsHeader);
 regularChats.forEach(chat => addChatItem(chat));
 }
 }
-
 function addChatItem(chat) {
 const chatItem = document.createElement('div');
 chatItem.className = 'chat-history-item';
@@ -1633,21 +1583,17 @@ chatItem.innerHTML = `
 <h3>${chat.title}</h3>
 <p>${formattedDate}</p>
 `;
-
 chatItem.addEventListener('click', (e) => {
 if (!e.target.closest('.chat-action-btn')) {
 loadChat(chat.id);
 chatHistoryModal.style.display = 'none';
 }
 });
-
 chatItem.querySelector('.chat-action-btn.favorite').addEventListener('click', (e) => { e.stopPropagation(); toggleFavoriteChat(chat.id); });
 chatItem.querySelector('.chat-action-btn.edit').addEventListener('click', (e) => { e.stopPropagation(); editChatTitle(chat.id); });
 chatItem.querySelector('.chat-action-btn.delete').addEventListener('click', (e) => { e.stopPropagation(); deleteChat(chat.id); });
-
 chatHistoryList.appendChild(chatItem);
 }
-
 function editChatTitle(chatId) {
 const chats = JSON.parse(localStorage.getItem('kalmeronChats') || '[]');
 const chatIndex = chats.findIndex(c => c.id === chatId);
@@ -1660,7 +1606,6 @@ loadChatHistory(searchInput.value);
 }
 }
 }
-
 function loadChat(chatId) {
 const chats = JSON.parse(localStorage.getItem('kalmeronChats') || '[]');
 const chatToLoad = chats.find(c => c.id === chatId);
@@ -1679,7 +1624,6 @@ chat.scrollTop = chat.scrollHeight;
 sessionStorage.setItem(SESSION_KEY, currentChatId);
 }
 }
-
 function toggleFavoriteChat(chatId) {
 const chats = JSON.parse(localStorage.getItem('kalmeronChats') || '[]');
 const chatIndex = chats.findIndex(c => c.id === chatId);
@@ -1689,7 +1633,6 @@ localStorage.setItem('kalmeronChats', JSON.stringify(chats));
 loadChatHistory(searchInput.value);
 }
 }
-
 function deleteChat(chatId) {
 if (confirm('هل أنت متأكد من حذف هذه المحادثة؟')) {
 const chats = JSON.parse(localStorage.getItem('kalmeronChats') || '[]');
@@ -1705,9 +1648,7 @@ loadWelcome(user);
 loadChatHistory(searchInput.value);
 }
 }
-
 function hideChatHistory(){chatHistoryModal.style.display='none';}
-
 function restoreActiveSession() {
 const sessionId = sessionStorage.getItem(SESSION_KEY);
 if (sessionId) {
@@ -1720,30 +1661,24 @@ return true;
 }
 return false;
 }
-
 function showModeSelectionDialog() {
 const modeDialog = document.createElement('div');
 modeDialog.id = 'modeSelectionDialog';
 modeDialog.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:3000;backdrop-filter:blur(10px);`;
-
 const dialogCard = document.createElement('div');
 dialogCard.style.cssText = `background:rgba(10,5,20,0.95);border:1px solid var(--border-color);border-radius:25px;padding:30px;width:90%;max-width:450px;direction:rtl;text-align:center;`;
-
 const title = document.createElement('h2');
 title.textContent = 'اختر وضع التشغيل';
 title.style.cssText = 'margin-top:0;margin-bottom:25px;color:var(--text-color);font-size:24px;';
-
 const modeOptionsDiv = document.createElement('div');
 modeOptionsDiv.className = 'mode-options';
 modeOptionsDiv.style.cssText = 'margin:20px 0;display:flex;gap:15px;justify-content:center;flex-wrap:wrap;';
-
 const modes = [
 {mode:'general',icon:'🟣',name:'Violet Shadow'},
 {mode:'science',icon:'🔵',name:'Ocean Blue'},
 {mode:'purple',icon:'💜',name:'Royal Purple'},
 {mode:'facebook',icon:'🤍',name:'Facebook White'}
 ];
-
 modes.forEach(m => {
 const opt = document.createElement('div');
 opt.className = 'mode-option'+(selectedMode===m.mode?' selected':'');
@@ -1757,11 +1692,9 @@ selectedMode = m.mode;
 });
 modeOptionsDiv.appendChild(opt);
 });
-
 const confirmBtn = document.createElement('button');
 confirmBtn.textContent = 'تأكيد';
 confirmBtn.style.cssText = `padding:12px 25px;border-radius:20px;border:none;font-size:16px;font-weight:bold;cursor:pointer;transition:all 0.3s;font-family:"Cairo",sans-serif;background:rgba(0,150,255,0.25);color:#4fc3f7;border:1px solid rgba(0,150,255,0.7);margin-top:20px;`;
-
 confirmBtn.addEventListener('click', () => {
 updateBodyClass();
 const user = checkUser();
@@ -1770,14 +1703,12 @@ chat.innerHTML = '';
 loadWelcome(user);
 document.body.removeChild(modeDialog);
 });
-
 dialogCard.appendChild(title);
 dialogCard.appendChild(modeOptionsDiv);
 dialogCard.appendChild(confirmBtn);
 modeDialog.appendChild(dialogCard);
 document.body.appendChild(modeDialog);
 }
-
 function handleInitialSetup() {
 const userData = checkUser();
 if (userData) {
@@ -1791,12 +1722,10 @@ if (!restoreActiveSession()) loadWelcome(userData);
 }, 300);
 return;
 }
-
 setTimeout(() => initialSetupCard.classList.add('visible'), 300);
 const minDate = new Date(); minDate.setFullYear(minDate.getFullYear() - 120);
 initialBirthDate.min = minDate.toISOString().split('T')[0];
 const maxDate = new Date(); initialBirthDate.max = maxDate.toISOString().split('T')[0];
-
 continueInitialBtn.addEventListener('click', () => {
 const name = initialName.value.trim();
 const birthDate = initialBirthDate.value;
@@ -1814,7 +1743,6 @@ createSnowflakes();
 }, 300);
 });
 }
-
 modalSaveBtn.addEventListener('click',()=>{
 const n=editName.value.trim(),b=editBirthDate.value;
 if(!n||!b)return;
@@ -1826,7 +1754,6 @@ hideProfile();
 chat.innerHTML='';
 loadWelcome({name:n});
 });
-
 modalCancelBtn.addEventListener('click',hideProfile);
 closeChatHistory.addEventListener('click',hideChatHistory);
 appHeader.addEventListener('click',()=>{loadChatHistory();chatHistoryModal.style.display='flex';});
@@ -1849,3 +1776,4 @@ window.onload = () => { handleInitialSetup(); };
 </script>
 </body>
 </html>
+```
