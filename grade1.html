@@ -520,6 +520,39 @@ color: #ccc;
 font-size: 14px;
 }
 
+.books-section {
+background: rgba(0, 255, 255, 0.15);
+border: 1px solid var(--border-color);
+border-radius: 15px;
+padding: 15px;
+margin: 10px 0;
+cursor: pointer;
+transition: all 0.3s ease;
+position: relative;
+}
+.books-section:hover {
+background: rgba(0, 255, 255, 0.25);
+transform: translateY(-2px);
+border-color: rgba(0, 255, 255, 0.6);
+}
+.books-section h3 {
+margin: 0 0 8px 0;
+color: var(--text-color);
+font-size: 18px;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+.books-section h3::before {
+content: "📚";
+font-size: 20px;
+}
+.books-section p {
+margin: 0;
+color: #ccc;
+font-size: 14px;
+}
+
 .favorites-header {
 background: rgba(0, 255, 255, 0.15);
 border: 1px solid var(--border-color);
@@ -1048,8 +1081,8 @@ textarea{font-size:16px;max-height:300px}
 .user,.bot-response{max-width:85%}
 .profile-card,.chat-history-card,.initial-setup-card{padding:20px;width:95%}
 .form-group input,.initial-form-group input{font-size:15px;padding:10px}
-.chat-history-item,.personal-profile-section,.todo-list-section{padding:12px}
-.personal-profile-section h3,.todo-list-section h3{font-size:16px}
+.chat-history-item,.personal-profile-section,.todo-list-section,.books-section{padding:12px}
+.personal-profile-section h3,.todo-list-section h3,.books-section h3{font-size:16px}
 .favorites-header,.chats-header{font-size:14px;padding:8px 12px}
 header{padding:12px 15px;}
 #newChatBtn{width:32px;height:32px;font-size:20px;}
@@ -1069,8 +1102,8 @@ textarea{font-size:16px;max-height:270px}
 .btn,.initial-btn{padding:10px 20px;font-size:15px}
 .chat-action-btn{width:24px;height:24px;font-size:12px}
 .close-modal{width:26px;height:26px;font-size:16px}
-.personal-profile-section,.todo-list-section{padding:10px}
-.personal-profile-section h3,.todo-list-section h3{font-size:15px}
+.personal-profile-section,.todo-list-section,.books-section{padding:10px}
+.personal-profile-section h3,.todo-list-section h3,.books-section h3{font-size:15px}
 .favorites-header,.chats-header{font-size:13px;padding:6px 10px}
 .personal-profile-section .edit-icon{width:20px;height:20px;font-size:12px}
 #newChatBtn{width:28px;height:28px;font-size:18px;}
@@ -1182,8 +1215,11 @@ textarea{font-size:16px;max-height:270px}
 </div>
 </div>
 </div>
+
 <script>
-const N8N_WEBHOOK_URL = "https://kamal13.app.n8n.cloud/webhook/kalmeron";
+// ===== تم تعديل الـ Webhook هنا يا أسطى =====
+const N8N_WEBHOOK_URL = "https://hesham217.app.n8n.cloud/webhook/kalmeron217";
+
 const chat = document.getElementById("chat"),
 msg = document.getElementById("msg"),
 sendBtn = document.getElementById("sendBtn"),
@@ -1212,161 +1248,12 @@ initialBirthDate = document.getElementById("initialBirthDate"),
 continueInitialBtn = document.getElementById("continueInitialBtn"),
 welcomeBanner = document.getElementById("welcomeBanner"),
 modeOptions = document.querySelectorAll('.mode-option');
-
 let isThinking = false;
 let currentChatId = null;
 let selectedMode = 'general';
 let snowflakesEnabled = true;
 let snowflakesDisabledModes = [];
-
 const SESSION_KEY = 'kalmeron_active_chat_session';
-
-// ================ نظام حفظ المستخدمين المتعدد ================
-function saveUserToDatabase(name, birthDate, mode, snowDisabledModes) {
-    // إنشاء معرف فريد للمستخدم
-    const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    
-    // بيانات المستخدم الحالي
-    const currentUser = {
-        id: userId,
-        name: name,
-        birthDate: birthDate,
-        mode: mode || 'general',
-        snowflakesDisabledModes: snowDisabledModes || [],
-        registeredAt: new Date().toISOString(),
-        lastSeen: new Date().toISOString(),
-        status: 'active',
-        deviceInfo: navigator.userAgent,
-        language: navigator.language
-    };
-    
-    // حفظ المستخدم الحالي في localStorage (للجلسة الحالية)
-    localStorage.setItem('kalmeronUserData', JSON.stringify(currentUser));
-    
-    // جلب قائمة كل المستخدمين
-    let allUsers = JSON.parse(localStorage.getItem('kalmeron_all_users') || '[]');
-    
-    // التحقق إذا كان المستخدم موجود مسبقاً (بنفس الاسم وتاريخ الميلاد)
-    const existingUserIndex = allUsers.findIndex(u => u.name === name && u.birthDate === birthDate);
-    
-    if (existingUserIndex !== -1) {
-        // تحديث بيانات المستخدم الموجود
-        allUsers[existingUserIndex].lastSeen = new Date().toISOString();
-        allUsers[existingUserIndex].mode = mode;
-        allUsers[existingUserIndex].deviceInfo = navigator.userAgent;
-        // تحديث معرف المستخدم الحالي
-        currentUser.id = allUsers[existingUserIndex].id;
-        localStorage.setItem('kalmeronUserData', JSON.stringify(currentUser));
-    } else {
-        // إضافة مستخدم جديد
-        allUsers.push(currentUser);
-    }
-    
-    // حفظ القائمة الكاملة
-    localStorage.setItem('kalmeron_all_users', JSON.stringify(allUsers));
-    
-    // تسجيل الجلسة
-    logUserSession(currentUser.id);
-    
-    return currentUser;
-}
-
-function logUserSession(userId) {
-    const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    sessionStorage.setItem('kalmeron_session_id', sessionId);
-    
-    const session = {
-        sessionId: sessionId,
-        userId: userId,
-        startTime: new Date().toISOString(),
-        lastActive: new Date().toISOString(),
-        userAgent: navigator.userAgent
-    };
-    
-    let sessions = JSON.parse(localStorage.getItem('kalmeron_sessions') || '[]');
-    sessions.push(session);
-    // الاحتفاظ بآخر 100 جلسة فقط
-    if (sessions.length > 100) sessions = sessions.slice(-100);
-    localStorage.setItem('kalmeron_sessions', JSON.stringify(sessions));
-}
-
-function updateUserLastSeen() {
-    const user = checkUser();
-    if (!user) return;
-    
-    // تحديث آخر ظهور للمستخدم الحالي
-    user.lastSeen = new Date().toISOString();
-    localStorage.setItem('kalmeronUserData', JSON.stringify(user));
-    
-    // تحديث في قائمة كل المستخدمين
-    let allUsers = JSON.parse(localStorage.getItem('kalmeron_all_users') || '[]');
-    const userIndex = allUsers.findIndex(u => u.id === user.id);
-    if (userIndex !== -1) {
-        allUsers[userIndex].lastSeen = new Date().toISOString();
-        localStorage.setItem('kalmeron_all_users', JSON.stringify(allUsers));
-    }
-    
-    // تحديث آخر نشاط في الجلسة
-    const sessionId = sessionStorage.getItem('kalmeron_session_id');
-    if (sessionId) {
-        let sessions = JSON.parse(localStorage.getItem('kalmeron_sessions') || '[]');
-        const sessionIndex = sessions.findIndex(s => s.sessionId === sessionId);
-        if (sessionIndex !== -1) {
-            sessions[sessionIndex].lastActive = new Date().toISOString();
-            localStorage.setItem('kalmeron_sessions', JSON.stringify(sessions));
-        }
-    }
-}
-
-function getAllUsers() {
-    return JSON.parse(localStorage.getItem('kalmeron_all_users') || '[]');
-}
-
-function isUserBlocked(userId) {
-    const blockedUsers = JSON.parse(localStorage.getItem('kalmeron_blocked_users') || '[]');
-    return blockedUsers.includes(userId);
-}
-
-function checkUserBlocked() {
-    const user = checkUser();
-    if (user && isUserBlocked(user.id)) {
-        alert('عذراً، تم حظر حسابك. لا يمكنك الدخول إلى الشات.');
-        clearUser();
-        location.reload();
-        return true;
-    }
-    return false;
-}
-
-// تعديل دالة checkUser لتشمل التحقق من الحظر
-function checkUser() {
-    const user = JSON.parse(localStorage.getItem('kalmeronUserData') || 'null');
-    if (user && isUserBlocked(user.id)) {
-        clearUser();
-        return null;
-    }
-    return user;
-}
-
-// تعديل دالة saveUser الأصلية
-function saveUser(name, birthDate, mode, snowDisabledModes) {
-    return saveUserToDatabase(name, birthDate, mode, snowDisabledModes);
-}
-
-function clearUser() {
-    localStorage.removeItem('kalmeronUserData');
-}
-
-// تحديث آخر ظهور كل دقيقة
-setInterval(updateUserLastSeen, 60000);
-
-// التحقق من الحظر عند بدء التشغيل
-window.addEventListener('load', () => {
-    if (checkUserBlocked()) return;
-});
-
-// ================ باقي الدوال ================
-
 function createSnowflakes(){
 if (snowflakesDisabledModes.includes(selectedMode)) return;
 const c=document.body;
@@ -1420,6 +1307,9 @@ document.body.className = `mode-${selectedMode}`;
 clearSnowflakes();
 if (!snowflakesDisabledModes.includes(selectedMode)) setTimeout(createSnowflakes, 100);
 }
+function checkUser(){return JSON.parse(localStorage.getItem('kalmeronUserData')||'null');}
+function saveUser(n,b,m,snowDisabledModes){localStorage.setItem('kalmeronUserData',JSON.stringify({name:n,birthDate:b,mode:m||'general',snowflakesDisabledModes:snowDisabledModes||[],registeredAt:new Date().toISOString()}));}
+function clearUser(){localStorage.removeItem('kalmeronUserData');}
 function createPersonalProfileSection() {
 const profileSection = document.createElement('div');
 profileSection.className = 'personal-profile-section';
@@ -1438,8 +1328,15 @@ window.location.href = 'todo-list.html';
 });
 return todoSection;
 }
-// تم إزالة createBooksSection نهائياً
-
+function createBooksSection() {
+const booksSection = document.createElement('div');
+booksSection.className = 'books-section';
+booksSection.innerHTML = `<h3>الكتب</h3><p>تصفح مكتبتك الرقمية</p>`;
+booksSection.addEventListener('click', () => {
+window.location.href = 'books.html';
+});
+return booksSection;
+}
 function showProfile(){
 const u=checkUser();
 if(u){
@@ -1591,19 +1488,23 @@ if (thinkingMsg.parentNode) chat.removeChild(thinkingMsg);
 const botMsg = document.createElement("div");
 botMsg.className = "bot-response";
 let formattedAnswer = ragResponse.answer || 'لم يتم استلام إجابة من الخادم';
+
 if (ragResponse.sources && ragResponse.sources.length > 0) {
 formattedAnswer += `
 📚 **المصادر:**
 `;
+
 ragResponse.sources.forEach((source, index) => {
 formattedAnswer += `${index + 1}. ${source}\n`;
 });
 }
+
 if (ragResponse.confidence && ragResponse.confidence < 0.5) {
 formattedAnswer += `
 ⚠️ *ملاحظة: قد تكون هذه الإجابة غير دقيقة*
 `;
 }
+
 botMsg.textContent = formattedAnswer;
 chat.appendChild(botMsg);
 chat.scrollTop = chat.scrollHeight;
@@ -1626,7 +1527,7 @@ const chats = JSON.parse(localStorage.getItem('kalmeronChats') || '[]');
 chatHistoryList.innerHTML = '';
 chatHistoryList.appendChild(createPersonalProfileSection());
 chatHistoryList.appendChild(createTodoListSection());
-// تم إزالة createBooksSection من هنا
+chatHistoryList.appendChild(createBooksSection());
 if (chats.length === 0) {
 chatHistoryList.innerHTML += '<p style="color:rgba(0,255,255,0.6);margin:20px 0;">لا توجد محادثات سابقة</p>';
 return;
