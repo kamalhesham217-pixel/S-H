@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kalmeron Chat</title>
 <style>
-/* ---------- التنسيقات كما هي تماماً (نفس تنسيقاتك الأصلية) ---------- */
+/* ---------- نفس التنسيقات كما هي تماماً ---------- */
 :root {
 --primary-color: #2A0B5C;
 --secondary-color: #0A043C;
@@ -1190,8 +1190,8 @@ textarea{font-size:16px;max-height:270px}
 </div>
 </div>
 <script>
-    // ======================== التعديل 1: تغيير رابط الباك إند ========================
-    const N8N_WEBHOOK_URL = "https://hesham217.app.n8n.cloud/webhook/kalmeron217";
+    // ======================== رابط الويب هوك النهائي للإنتاج ========================
+    const N8N_WEBHOOK_URL = "https://abdelfadeel418.app.n8n.cloud/webhook/kalmeron217";
 
     const chat = document.getElementById("chat"),
     msg = document.getElementById("msg"),
@@ -1798,15 +1798,26 @@ textarea{font-size:16px;max-height:270px}
                 sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 sessionStorage.setItem('kalmeron_session_id', sessionId);
             }
+            
+            // استخدام رابط الويب هوك النهائي للإنتاج
             const response = await fetch(N8N_WEBHOOK_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                body: JSON.stringify({ question, timestamp: new Date().toISOString(), sessionId, userId, mode: selectedMode })
+                body: JSON.stringify({ 
+                    question, 
+                    timestamp: new Date().toISOString(), 
+                    sessionId, 
+                    userId, 
+                    mode: selectedMode 
+                })
             });
+            
             if (!response.ok) throw new Error(`خطأ في الاتصال: ${response.status} ${response.statusText}`);
+            
             const responseText = await response.text();
             let parsedData;
             try { parsedData = JSON.parse(responseText); } catch (parseError) { parsedData = { answer: responseText }; }
+            
             const result = extractAnswerFromResponse(parsedData);
             return result;
         } catch (error) {
@@ -1953,4 +1964,3 @@ textarea{font-size:16px;max-height:270px}
 </script>
 </body>
 </html>
-
